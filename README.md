@@ -11,7 +11,7 @@ python scaffold.py
 ## Steps
 
 - [x] **1.** validate_events
-- [ ] **2.** dataset_version
+- [x] **2.** dataset_version
 - [ ] **3.** point_in_time_features
 - [ ] **4.** matured_labels
 - [ ] **5.** train_model

@@ -157,8 +157,31 @@ def validate_events(events):
 
     return clean, rejected
 
-# Step 2 - dataset_version (not yet solved)
-# TODO: implement
+# Step 2 - dataset_version
+import hashlib
+import json
+
+
+def dataset_version(rows, key="event_id"):
+    """First 12 hex chars of sha256 over the rows sorted by key, canonical JSON."""
+
+    # Sort rows by the specified key to ensure order-independent versioning.
+    sorted_rows = sorted(rows, key=lambda row: row[key])
+
+    # Serialize rows into canonical JSON for consistent hashing.
+    serialized = json.dumps(
+        sorted_rows,
+        sort_keys=True,
+        separators=(",", ":")
+    )
+
+    # Encode the serialized JSON as UTF-8 bytes.
+    encoded = serialized.encode("utf-8")
+
+    # Generate the SHA-256 hash and return its first 12 hexadecimal characters.
+    version_id = hashlib.sha256(encoded).hexdigest()[:12]
+
+    return version_id
 
 # Step 3 - point_in_time_features (not yet solved)
 # TODO: implement
