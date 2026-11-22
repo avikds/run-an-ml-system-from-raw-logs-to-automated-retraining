@@ -504,8 +504,27 @@ def assign_variant(user_id, canary_percent, salt="release-1"):
 
     return "stable"
 
-# Step 10 - canary_check (not yet solved)
-# TODO: implement
+# Step 10 - canary_check
+def canary_check(stable, canary, max_ratio=1.2, min_requests=200):
+    """'wait', 'rollback' or 'promote' from the two groups' request and error counts."""
+
+    # Wait until both groups have collected enough requests for evaluation.
+    if (
+        stable["requests"] < min_requests
+        or canary["requests"] < min_requests
+    ):
+        return "wait"
+
+    # Calculate the error rate for each deployment group.
+    stable_error_rate = stable["errors"] / stable["requests"]
+    canary_error_rate = canary["errors"] / canary["requests"]
+
+    # Roll back if the canary error rate exceeds the allowed threshold.
+    if canary_error_rate > max_ratio * stable_error_rate:
+        return "rollback"
+
+    # Promote the canary when its error rate is within the acceptable limit.
+    return "promote"
 
 # Step 11 - daily_auc (not yet solved)
 # TODO: implement
