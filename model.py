@@ -482,8 +482,27 @@ def ci_gate(candidate, baseline, tolerance=0.015, min_count=100):
 
     return passed, reasons
 
-# Step 9 - assign_variant (not yet solved)
-# TODO: implement
+# Step 9 - assign_variant
+def assign_variant(user_id, canary_percent, salt="release-1"):
+    """'canary' if sha256('salt:user_id') bucket (first 8 hex mod 100) < canary_percent, else 'stable'."""
+
+    # Construct a unique string using the release salt and user ID.
+    user_key = f"{salt}:{user_id}"
+
+    # Generate a SHA-256 hash of the user key.
+    hash_value = hashlib.sha256(user_key.encode("utf-8")).hexdigest()
+
+    # Convert the first 8 hexadecimal characters into an integer.
+    hash_integer = int(hash_value[:8], 16)
+
+    # Map the hash into a deterministic bucket between 0 and 99.
+    bucket = hash_integer % 100
+
+    # Assign the user to the canary group if the bucket is below the threshold.
+    if bucket < canary_percent:
+        return "canary"
+
+    return "stable"
 
 # Step 10 - canary_check (not yet solved)
 # TODO: implement
