@@ -15,7 +15,7 @@ python scaffold.py
 - [x] **3.** point_in_time_features
 - [x] **4.** matured_labels
 - [x] **5.** train_model
-- [ ] **6.** ExperimentTracker
+- [x] **6.** ExperimentTracker
 - [ ] **7.** slice_report
 - [ ] **8.** ci_gate
 - [ ] **9.** assign_variant

@@ -313,8 +313,68 @@ def train_model(X, y, C=1.0):
     # Return the fitted pipeline.
     return model
 
-# Step 6 - ExperimentTracker (not yet solved)
-# TODO: implement
+# Step 6 - ExperimentTracker
+class ExperimentTracker:
+    """Logs runs (params, data version, metrics) and finds the best run per data version."""
+
+    def __init__(self):
+        # Store all experiment runs in chronological order.
+        self.runs = []
+
+    def log_run(self, params, data_version, metrics):
+        """Store a training run and return its unique run ID."""
+
+        # Generate sequential run IDs starting from run-001.
+        run_id = f"run-{len(self.runs) + 1:03d}"
+
+        # Store copies of parameters and metrics to prevent external
+        # dictionary modifications from changing the recorded run.
+        run_record = {
+            "run_id": run_id,
+            "params": dict(params),
+            "data_version": data_version,
+            "metrics": dict(metrics)
+        }
+
+        # Append the run record to the experiment history.
+        self.runs.append(run_record)
+
+        return run_id
+
+    def best_run(self, metric, data_version, higher_is_better=True):
+        """Return the ID of the best run for a metric and dataset version."""
+
+        best = None
+
+        # Examine runs belonging to the requested dataset version.
+        for run in self.runs:
+            if run["data_version"] != data_version:
+                continue
+
+            # Skip runs that do not contain the requested metric.
+            if metric not in run["metrics"]:
+                continue
+
+            current_value = run["metrics"][metric]
+
+            # Select the first eligible run as the initial best run.
+            if best is None:
+                best = run
+                continue
+
+            best_value = best["metrics"][metric]
+
+            # Update only when a strictly better metric value is found.
+            # Keeping strict comparisons ensures earlier runs win ties.
+            if higher_is_better:
+                if current_value > best_value:
+                    best = run
+            else:
+                if current_value < best_value:
+                    best = run
+
+        # Return the best run ID, or None if no eligible run exists.
+        return best["run_id"] if best is not None else None
 
 # Step 7 - slice_report (not yet solved)
 # TODO: implement
