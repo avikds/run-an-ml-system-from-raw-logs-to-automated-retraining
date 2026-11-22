@@ -20,7 +20,7 @@ python scaffold.py
 - [x] **8.** ci_gate
 - [x] **9.** assign_variant
 - [x] **10.** canary_check
-- [ ] **11.** daily_auc
+- [x] **11.** daily_auc
 - [ ] **12.** retrain_decision
 
 ---

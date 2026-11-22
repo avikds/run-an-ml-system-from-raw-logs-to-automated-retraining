@@ -526,8 +526,58 @@ def canary_check(stable, canary, max_ratio=1.2, min_requests=200):
     # Promote the canary when its error rate is within the acceptable limit.
     return "promote"
 
-# Step 11 - daily_auc (not yet solved)
-# TODO: implement
+# Step 11 - daily_auc
+def daily_auc(events, probs, labels, min_labels=100):
+    """{day: AUC} on matured labels for days with enough labels and both classes."""
+
+    # Group actual labels and predicted probabilities by notification day.
+    daily_data = {}
+
+    for event, probability in zip(events, probs):
+
+        event_id = event["event_id"]
+
+        # Ignore events whose outcomes have not yet matured.
+        if event_id not in labels:
+            continue
+
+        # Calculate the day using minutes since the start of the logs.
+        day = event["ts"] // DAY
+
+        # Initialize storage for the current day.
+        if day not in daily_data:
+            daily_data[day] = {
+                "y_true": [],
+                "y_probs": []
+            }
+
+        # Store the matured outcome and its corresponding prediction.
+        daily_data[day]["y_true"].append(labels[event_id])
+        daily_data[day]["y_probs"].append(probability)
+
+    # Store the final daily AUC results.
+    results = {}
+
+    # Process days in chronological order.
+    for day in sorted(daily_data):
+
+        y_true = daily_data[day]["y_true"]
+        y_probs = daily_data[day]["y_probs"]
+
+        # Require at least min_labels matured outcomes.
+        if len(y_true) < min_labels:
+            continue
+
+        # AUC cannot be calculated when only one outcome class is present.
+        if len(np.unique(y_true)) < 2:
+            continue
+
+        # Calculate and round the daily AUC to four decimal places.
+        auc = roc_auc_score(y_true, y_probs)
+
+        results[day] = round(float(auc), 4)
+
+    return results
 
 # Step 12 - retrain_decision (not yet solved)
 # TODO: implement
