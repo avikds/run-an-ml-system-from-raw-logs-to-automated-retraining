@@ -16,7 +16,7 @@ python scaffold.py
 - [x] **4.** matured_labels
 - [x] **5.** train_model
 - [x] **6.** ExperimentTracker
-- [ ] **7.** slice_report
+- [x] **7.** slice_report
 - [ ] **8.** ci_gate
 - [ ] **9.** assign_variant
 - [ ] **10.** canary_check

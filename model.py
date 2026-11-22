@@ -376,8 +376,57 @@ class ExperimentTracker:
         # Return the best run ID, or None if no eligible run exists.
         return best["run_id"] if best is not None else None
 
-# Step 7 - slice_report (not yet solved)
-# TODO: implement
+# Step 7 - slice_report
+from sklearn.metrics import roc_auc_score
+
+
+def slice_report(y_true, p, slices):
+    """Overall and per-slice counts and AUC (rounded to 4, None for a one-class group)."""
+
+    # Convert inputs into NumPy arrays for efficient indexing.
+    y_true = np.asarray(y_true).ravel()
+    p = np.asarray(p).ravel()
+    slices = np.asarray(slices).ravel()
+
+    def calculate_auc(y, probabilities):
+        """Calculate AUC, returning None when only one class is present."""
+
+        # AUC is undefined when the group contains fewer than two classes.
+        if len(np.unique(y)) < 2:
+            return None
+
+        # Calculate ROC AUC and round the result to four decimal places.
+        return round(float(roc_auc_score(y, probabilities)), 4)
+
+    # Calculate overall sample count and AUC.
+    overall = {
+        "n": len(y_true),
+        "auc": calculate_auc(y_true, p)
+    }
+
+    # Initialize the dictionary containing per-slice evaluation results.
+    slice_results = {}
+
+    # Process each unique slice in sorted order.
+    for name in sorted(np.unique(slices).tolist()):
+
+        # Select the samples belonging to the current slice.
+        mask = slices == name
+
+        y_group = y_true[mask]
+        p_group = p[mask]
+
+        # Calculate sample count and AUC for the current slice.
+        slice_results[name] = {
+            "n": len(y_group),
+            "auc": calculate_auc(y_group, p_group)
+        }
+
+    # Return the overall and per-slice evaluation report.
+    return {
+        "overall": overall,
+        "slices": slice_results
+    }
 
 # Step 8 - ci_gate (not yet solved)
 # TODO: implement
