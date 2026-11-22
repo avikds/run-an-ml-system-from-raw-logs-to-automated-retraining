@@ -275,8 +275,18 @@ def point_in_time_features(events, feature_log):
     # Return a NumPy floating-point array with shape (n_events, 10).
     return np.asarray(features, dtype=float).reshape(-1, len(FEATURE_NAMES))
 
-# Step 4 - matured_labels (not yet solved)
-# TODO: implement
+# Step 4 - matured_labels
+def matured_labels(outcomes, as_of):
+    """{event_id: opened} for outcomes with label_ts <= as_of."""
+
+    # Keep only outcomes whose labels were available by the cutoff time.
+    matured = {
+        outcome["event_id"]: outcome["opened"]
+        for outcome in outcomes
+        if outcome["label_ts"] <= as_of
+    }
+
+    return matured
 
 # Step 5 - train_model (not yet solved)
 # TODO: implement
