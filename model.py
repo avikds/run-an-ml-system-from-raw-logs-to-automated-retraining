@@ -183,8 +183,97 @@ def dataset_version(rows, key="event_id"):
 
     return version_id
 
-# Step 3 - point_in_time_features (not yet solved)
-# TODO: implement
+# Step 3 - point_in_time_features
+import bisect
+
+FEATURE_NAMES = [
+    "sessions_7d",
+    "opens_7d",
+    "morning",
+    "evening",
+    "android",
+    "web",
+    "android_morning",
+    "android_evening",
+    "android_opens",
+    "has_history"
+]
+
+
+def point_in_time_features(events, feature_log):
+    """(n_events, 10) array from the latest log row at or before each event."""
+
+    # Group feature-log entries by user.
+    user_history = {}
+
+    for row in feature_log:
+        user_id = row["user_id"]
+        user_history.setdefault(user_id, []).append(row)
+
+    # Sort each user's history chronologically and store timestamps separately.
+    user_timestamps = {}
+
+    for user_id, history in user_history.items():
+        history.sort(key=lambda row: row["ts"])
+        user_timestamps[user_id] = [row["ts"] for row in history]
+
+    features = []
+
+    # Generate one feature row for every notification event.
+    for event in events:
+        user_id = event["user_id"]
+        ts = event["ts"]
+        hour = event["hour"]
+        device = event["device"]
+
+        # Find the most recent feature-log entry at or before the event timestamp.
+        history = user_history.get(user_id, [])
+        timestamps = user_timestamps.get(user_id, [])
+
+        index = bisect.bisect_right(timestamps, ts) - 1
+
+        # Use zero activity counts when no historical record is available.
+        if index >= 0:
+            log_row = history[index]
+            sessions_7d = log_row["sessions_7d"]
+            opens_7d = log_row["opens_7d"]
+            has_history = 1
+        else:
+            sessions_7d = 0
+            opens_7d = 0
+            has_history = 0
+
+        # Create time-of-day indicator features.
+        morning = int(7 <= hour <= 10)
+        evening = int(18 <= hour <= 22)
+
+        # Create device indicator features.
+        android = int(device == "android")
+        web = int(device == "web")
+
+        # Create interaction features.
+        android_morning = android * morning
+        android_evening = android * evening
+        android_opens = android * opens_7d
+
+        # Assemble features in the exact order specified by FEATURE_NAMES.
+        feature_row = [
+            sessions_7d,
+            opens_7d,
+            morning,
+            evening,
+            android,
+            web,
+            android_morning,
+            android_evening,
+            android_opens,
+            has_history
+        ]
+
+        features.append(feature_row)
+
+    # Return a NumPy floating-point array with shape (n_events, 10).
+    return np.asarray(features, dtype=float).reshape(-1, len(FEATURE_NAMES))
 
 # Step 4 - matured_labels (not yet solved)
 # TODO: implement

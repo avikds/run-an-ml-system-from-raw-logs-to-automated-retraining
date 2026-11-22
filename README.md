@@ -12,7 +12,7 @@ python scaffold.py
 
 - [x] **1.** validate_events
 - [x] **2.** dataset_version
-- [ ] **3.** point_in_time_features
+- [x] **3.** point_in_time_features
 - [ ] **4.** matured_labels
 - [ ] **5.** train_model
 - [ ] **6.** ExperimentTracker
