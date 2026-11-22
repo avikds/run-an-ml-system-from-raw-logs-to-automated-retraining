@@ -428,8 +428,59 @@ def slice_report(y_true, p, slices):
         "slices": slice_results
     }
 
-# Step 8 - ci_gate (not yet solved)
-# TODO: implement
+# Step 8 - ci_gate
+def ci_gate(candidate, baseline, tolerance=0.015, min_count=100):
+    """(passed, reasons) from overall and per-slice AUC rules."""
+
+    reasons = []
+
+    # Extract overall AUC values from the candidate and baseline reports.
+    candidate_auc = candidate["overall"]["auc"]
+    baseline_auc = baseline["overall"]["auc"]
+
+    # Rule 1: Reject the candidate if its overall AUC is lower.
+    if (
+        candidate_auc is not None
+        and baseline_auc is not None
+        and candidate_auc < baseline_auc
+    ):
+        reasons.append("overall auc dropped")
+
+    # Retrieve the device-slice evaluation reports.
+    candidate_slices = candidate["slices"]
+    baseline_slices = baseline["slices"]
+
+    # Evaluate every baseline slice in sorted name order.
+    for name in sorted(baseline_slices):
+
+        # Rule 2: Reject the candidate if a baseline slice is missing.
+        if name not in candidate_slices:
+            reasons.append(f"slice missing: {name}")
+            continue
+
+        candidate_slice = candidate_slices[name]
+        baseline_slice = baseline_slices[name]
+
+        candidate_slice_auc = candidate_slice["auc"]
+        baseline_slice_auc = baseline_slice["auc"]
+
+        # Rule 3: Check regression only when the candidate slice
+        # has enough samples and both AUC values are available.
+        if (
+            candidate_slice["n"] >= min_count
+            and candidate_slice_auc is not None
+            and baseline_slice_auc is not None
+        ):
+
+            # Reject if the candidate AUC is more than the allowed
+            # tolerance below the corresponding baseline AUC.
+            if candidate_slice_auc < baseline_slice_auc - tolerance:
+                reasons.append(f"slice regressed: {name}")
+
+    # The candidate passes only when no release rules have failed.
+    passed = len(reasons) == 0
+
+    return passed, reasons
 
 # Step 9 - assign_variant (not yet solved)
 # TODO: implement

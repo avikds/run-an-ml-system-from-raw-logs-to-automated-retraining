@@ -17,7 +17,7 @@ python scaffold.py
 - [x] **5.** train_model
 - [x] **6.** ExperimentTracker
 - [x] **7.** slice_report
-- [ ] **8.** ci_gate
+- [x] **8.** ci_gate
 - [ ] **9.** assign_variant
 - [ ] **10.** canary_check
 - [ ] **11.** daily_auc
