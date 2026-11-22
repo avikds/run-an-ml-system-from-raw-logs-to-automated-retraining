@@ -579,6 +579,39 @@ def daily_auc(events, probs, labels, min_labels=100):
 
     return results
 
-# Step 12 - retrain_decision (not yet solved)
-# TODO: implement
+# Step 12 - retrain_decision
+def retrain_decision(daily, floor=0.75, patience=2, cooldown=3, last_retrain=None):
+    """First day the AUC has been below floor for `patience` entries in a row, or None."""
+
+    # Initialize the consecutive below-threshold AUC counter.
+    streak = 0
+
+    # Calculate the earliest day on which retraining can be considered.
+    cooldown_end = (
+        last_retrain + cooldown
+        if last_retrain is not None
+        else None
+    )
+
+    # Process available daily AUC values in chronological order.
+    for day in sorted(daily):
+
+        # Ignore days within the cooldown period and reset the streak.
+        if cooldown_end is not None and day < cooldown_end:
+            streak = 0
+            continue
+
+        # Increment the streak when AUC is below the acceptable threshold.
+        if daily[day] < floor:
+            streak += 1
+        else:
+            # Reset the streak whenever AUC returns to an acceptable value.
+            streak = 0
+
+        # Trigger retraining when the required consecutive entries are reached.
+        if streak >= patience:
+            return day
+
+    # Return None when no retraining trigger condition is satisfied.
+    return None
 

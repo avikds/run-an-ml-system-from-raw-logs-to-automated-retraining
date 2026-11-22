@@ -21,7 +21,7 @@ python scaffold.py
 - [x] **9.** assign_variant
 - [x] **10.** canary_check
 - [x] **11.** daily_auc
-- [ ] **12.** retrain_decision
+- [x] **12.** retrain_decision
 
 ---
 
