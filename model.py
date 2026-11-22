@@ -288,8 +288,30 @@ def matured_labels(outcomes, as_of):
 
     return matured
 
-# Step 5 - train_model (not yet solved)
-# TODO: implement
+# Step 5 - train_model
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+
+def train_model(X, y, C=1.0):
+    """Fitted StandardScaler + LogisticRegression(C, max_iter=2000, tol=1e-8)."""
+
+    # Create a pipeline with feature standardization followed by logistic regression.
+    model = make_pipeline(
+        StandardScaler(),
+        LogisticRegression(
+            C=C,
+            max_iter=2000,
+            tol=1e-8
+        )
+    )
+
+    # Fit the complete pipeline using the training features and labels.
+    model.fit(X, y)
+
+    # Return the fitted pipeline.
+    return model
 
 # Step 6 - ExperimentTracker (not yet solved)
 # TODO: implement
